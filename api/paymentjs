@@ -1,0 +1,139 @@
+// api/payment.js - VERSÃO CORRETA PARA NETLIFY
+
+const SIGILOPAY_ENDPOINT = 'https://api.sigilopay.com/v1/pix/cashin/';
+
+exports.handler = async (event, context) => {
+  // Headers CORS
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Content-Type': 'application/json'
+  };
+
+  // Responder OPTIONS
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers,
+      body: ''
+    };
+  }
+
+  try {
+    // Pegar token da variável de ambiente
+    const SIGILOPAY_TOKEN = process.env.SIGILOPAY_TOKEN;
+
+    // Pegar parâmetros
+    const params = event.queryStringParameters || {};
+    const { amount, nome, cpf, tel, email, pedido, postback } = params;
+
+    // Validar valor
+    if (!amount) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({
+          success: false,
+          error: 'Parâmetro amount obrigatório'
+        })
+      };
+    }
+
+    const valor = parseFloat(amount.toString().replace(',', '.'));
+    
+    if (isNaN(valor) || valor < 0.01) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({
+          success: false,
+          error: 'Valor inválido'
+        })
+      };
+    }
+
+    const valorFinal = Math.round(valor * 100) / 100;
+
+    // Validar token
+    if (!SIGILOPAY_TOKEN) {
+      return {
+        statusCode: 401,
+        headers,
+        body: JSON.stringify({
+          success: false,
+          error: 'Token SigiloPay não configurado. Adicione SIGILOPAY_TOKEN nas variáveis de ambiente.'
+        })
+      };
+    }
+
+    // Montar payload
+    const payload = {
+      amount: valorFinal,
+      client: {
+        name: nome || 'Cliente',
+        document: cpf ? cpf.replace(/\D/g, '') : '',
+        telefone: tel ? tel.replace(/\D/g, '') : '',
+        email: email || ''
+      },
+      product: {
+        name_product: pedido ? `Pedido #${pedido}` : 'Doação Ellen',
+        valor_product: valorFinal.toFixed(2)
+      }
+    };
+
+    if (postback) {
+      payload.postbackUrl = postback;
+    }
+
+    // Fazer requisição para SigiloPay
+    // Testando ambos os formatos de autenticação
+    const response = await fetch(SIGILOPAY_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SIGILOPAY_TOKEN}`,
+        'X-API-Key': SIGILOPAY_TOKEN  // Alternativa caso use X-API-Key
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+
+    // Verificar resposta
+    if (!response.ok || !data.paymentCode) {
+      const errorMsg = data.message || 'sem paymentCode';
+      return {
+        statusCode: response.status,
+        headers,
+        body: JSON.stringify({
+          success: false,
+          error: `Falha SigiloPay (HTTP ${response.status}): ${errorMsg}`
+        })
+      };
+    }
+
+    // Retornar sucesso
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        paymentCode: data.paymentCode,
+        amount: valorFinal,
+        qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(data.paymentCode)}`
+      })
+    };
+
+  } catch (error) {
+    console.error('Erro:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({
+        success: false,
+        error: `Erro no servidor: ${error.message}`
+      })
+    };
+  }
+};
