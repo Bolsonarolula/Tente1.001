@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout</title>
+    <link rel="icon" href="images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+h1 {
+    color: #4A2B0F;
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.id-number {
+    color: #4A2B0F;
+    font-size: 14px;
+    margin-bottom: 30px;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.value-input {
+    display: flex;
+    position: relative;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.currency-prefix {
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-right: none;
+    border-radius: 5px 0 0 5px;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    color: #333;
+    font-weight: 500;
+}
+
+.value-field {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 0 5px 5px 0;
+    padding: 10px 15px;
+    font-size: 16px;
+    outline: none;
+}
+
+.payment-methods {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.payment-option {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.payment-option.pix {
+    background-color: #22c55e;
+    border-color: #22c55e;
+    color: white;
+}
+
+.radio-button {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    display: inline-block;
+    position: relative;
+}
+
+.payment-option.pix .radio-button {
+    border-color: white;
+}
+
+.payment-option.pix .radio-button::after {
+    content: "";
+    width: 10px;
+    height: 10px;
+    background-color: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.charity-options {
+    border: 1px dashed #ccc;
+    border-radius: 5px;
+    display: flex;
+    margin-bottom: 30px;
+    overflow: hidden;
+}
+
+.charity-item {
+    flex: 1;
+    padding: 15px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: white;
+    color: #333;
+    border-right: 1px dashed #a1a1a1;
+    height: 120px;
+    justify-content: center;
+}
+
+.charity-item:last-child {
+    border-right: none;
+}
+
+.charity-item.selected {
+    background-color: rgba(34, 197, 94, 0.6);
+    color: #ffffff;
+    text-shadow: 1px 1px 2px rgba(85, 85, 85, 0.5);
+}
+
+.charity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 5px;
+    overflow: hidden;
+}
+
+.charity-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.charity-item.selected .charity-icon {
+    background-color: white;
+}
+
+.charity-name {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.charity-price {
+    font-size: 12px;
+    color: #666;
+}
+
+.charity-item.selected .charity-price {
+    color: white;
+}
+
+.summary {
+    margin-bottom: 20px;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    color: #666;
+    font-size: 14px;
+}
+
+.divider {
+    height: 1px;
+    background-color: #eee;
+    margin: 15px 0;
+}
+
+.contribute-button {
+    background-color: #22c55e;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 15px;
+    width: 100%;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+
+.contribute-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.contribute-button.processing {
+    position: relative;
+    color: transparent;
+}
+
+.contribute-button.processing::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 24px;
+    height: 24px;
+    margin: -12px 0 0 -12px;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.error-message {
+    color: #dc2626;
+    font-size: 12px;
+    margin-top: 5px;
+    display: none;
+}
+</style>
+</head>
+
+<body>
+    <div class="main-content">
+        <header>
+            <div class="container">
+                <div class="content-header d-flex align-items-center justify-content-between">
+                    <div class="logo">
+                        <a href="#"><img src="images/logo.svg" alt="Vakinha Online"></a>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <br>
+        <h1>A Ellen precisa da sua ajuda, isso é um pedido de socorro!</h1>
+        <div class="id-number">ID: 5578968</div>
+
+        <div class="value-input">
+            <div class="currency-prefix">R$</div>
+            <input type="tel" id="contribution-input" class="value-field" value="0,00">
+        </div>
+        <div id="error-message" class="error-message">
+            Valor mínimo da doação é de R$ 15,00
+        </div>
+        <div id="max-error-message" class="error-message">
+            Valor máximo permitido é de R$ 1.000,00
+        </div>
+
+        <div class="section-title">Forma de pagamento</div>
+        <div class="payment-methods">
+            <div class="payment-option pix">
+                <span class="radio-button"></span>
+                <span>Pix</span>
+            </div>
+        </div>
+
+        <div class="section-title">Turbine sua doação</div>
+        <div class="summary-item">
+            <span>Ajude MUITO MAIS turbinando sua doação 💚</span>
+        </div>
+        <div class="charity-options">
+            <div class="charity-item" data-value="44.30">
+                <div class="charity-icon heart-icon">
+                    <img src="images/lunam.png" alt="Ícone de Coração">
+                </div>
+                <div class="charity-name">Multiplicador de impacto</div>
+                <div class="charity-price">R$ 44,30</div>
+            </div>
+            <div class="charity-item" data-value="27.99">
+                <div class="charity-icon society-icon">
+                    <img src="images/lunap.png" alt="Ícone de Sociedade">
+                </div>
+                <div class="charity-name">Materiais de Estudo</div>
+                <div class="charity-price">R$ 27,99</div>
+            </div>
+            <div class="charity-item" data-value="35.99">
+                <div class="charity-icon society-icon">
+                    <img src="images/lunaa.png" alt="Ícone de Sociedade">
+                </div>
+                <div class="charity-name">Doar cesta básica</div>
+                <div class="charity-price">R$ 35,99</div>
+            </div>
+        </div>
+
+        <div class="summary">
+            <div class="summary-item">
+                <span>Contribuição:</span>
+                <span id="summary-contribution">R$ 0,00</span>
+            </div>
+            <div class="divider"></div>
+            <div class="summary-item">
+                <span>Total:</span>
+                <span id="summary-total">R$ 0,00</span>
+            </div>
+        </div>
+
+        <button class="contribute-button" id="contribute-btn">Contribuir</button>
+    </div>
+
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("JavaScript carregado!"); // Para debug
+  
+  const contributionInput = document.getElementById("contribution-input");
+  const errorMessage = document.getElementById("error-message");
+  const maxErrorMessage = document.getElementById("max-error-message");
+  const contributeButton = document.getElementById("contribute-btn");
+  const paymentOption = document.querySelector(".payment-option.pix");
+  const charityItems = document.querySelectorAll(".charity-item");
+  const summaryContribution = document.getElementById("summary-contribution");
+  const summaryTotal = document.getElementById("summary-total");
+
+  let selectedAmount = 0;
+  const additionalAmounts = [];
+  const MIN_AMOUNT = 15;
+  const MAX_AMOUNT = 1000;
+
+  function formatCurrency(value) {
+    return Number(parseFloat(value).toFixed(2)).toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }
+
+  function updateSummary() {
+    const additionalTotal = additionalAmounts.reduce((sum, amount) => sum + amount, 0);
+    const total = selectedAmount + additionalTotal;
+
+    summaryContribution.textContent = `R$ ${formatCurrency(selectedAmount)}`;
+    summaryTotal.textContent = `R$ ${formatCurrency(total)}`;
+
+    const roundedTotal = Math.round(total * 100) / 100;
+
+    if (roundedTotal >= MIN_AMOUNT && roundedTotal <= MAX_AMOUNT) {
+      contributeButton.disabled = false;
+      errorMessage.style.display = "none";
+      maxErrorMessage.style.display = "none";
+    } else if (roundedTotal > MAX_AMOUNT) {
+      contributeButton.disabled = true;
+      errorMessage.style.display = "none";
+      maxErrorMessage.style.display = "block";
+    } else {
+      contributeButton.disabled = true;
+      errorMessage.style.display = "block";
+      maxErrorMessage.style.display = "none";
+    }
+
+    console.log("Total:", total);
+  }
+
+  function initCurrencyMask() {
+    contributionInput.addEventListener("input", (e) => {
+      let value = e.target.value.replace(/\D/g, "");
+      value = (parseInt(value) / 100).toFixed(2);
+      e.target.value = formatCurrency(value);
+
+      selectedAmount = parseFloat(value);
+      updateSummary();
+    });
+
+    contributionInput.value = formatCurrency(0);
+  }
+
+  function setupCharityItems() {
+    const selectedItemsMap = new Map();
+
+    charityItems.forEach((item) => {
+      item.addEventListener("click", function () {
+        const value = parseFloat(this.dataset.value);
+        const itemId = this.dataset.value;
+
+        if (this.classList.contains("selected")) {
+          this.classList.remove("selected");
+
+          if (selectedItemsMap.has(itemId)) {
+            const index = selectedItemsMap.get(itemId);
+            additionalAmounts.splice(index, 1);
+
+            selectedItemsMap.forEach((val, key) => {
+              if (val > index) {
+                selectedItemsMap.set(key, val - 1);
+              }
+            });
+
+            selectedItemsMap.delete(itemId);
+          }
+        } else {
+          this.classList.add("selected");
+          additionalAmounts.push(value);
+          selectedItemsMap.set(itemId, additionalAmounts.length - 1);
+        }
+
+        updateSummary();
+      });
+    });
+  }
+
+  function init() {
+    initCurrencyMask();
+    setupCharityItems();
+    paymentOption.classList.add("selected");
+    errorMessage.style.display = "none";
+    maxErrorMessage.style.display = "none";
+    updateSummary();
+  }
+
+  contributeButton.addEventListener("click", () => {
+    const additionalTotal = additionalAmounts.reduce((sum, amount) => sum + amount, 0);
+    const total = selectedAmount + additionalTotal;
+    const roundedTotal = Math.round(total * 100) / 100;
+
+    console.log("Clicou em contribuir. Total:", roundedTotal);
+
+    if (roundedTotal < MIN_AMOUNT) {
+      errorMessage.style.display = "block";
+      return;
+    }
+
+    if (roundedTotal > MAX_AMOUNT) {
+      maxErrorMessage.style.display = "block";
+      return;
+    }
+
+    contributeButton.textContent = "Processando...";
+    contributeButton.disabled = true;
+
+    // REDIRECIONAMENTO CORRIGIDO
+    window.location.href = `pix-display.html?amount=${roundedTotal}`;
+  });
+
+  init();
+  console.log("Tudo inicializado!");
+});
+    </script>
+</body>
+</html>
